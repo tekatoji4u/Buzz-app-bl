@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzz! - Secure Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+        .card { background-color: #1e293b; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center min-h-screen">
+    
+    <!-- MÀN HÌNH ĐĂNG NHẬP / TẠO TÀI KHOẢN -->
+    <div id="authScreen" class="w-full max-w-sm mt-10">
+        <div class="card border border-slate-700">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-bold text-yellow-500 mb-2">⚡ Buzz!</h1>
+                <p class="text-sm text-slate-400">Kết nối an toàn</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">ID Của Bạn (Tự chọn)</label>
+                    <input type="text" id="authId" class="w-full bg-slate-800/50 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 transition-colors uppercase font-mono" placeholder="Ví dụ: ADMIN_A">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Mật khẩu</label>
+                    <input type="password" id="authPass" class="w-full bg-slate-800/50 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 transition-colors" placeholder="••••••••">
+                </div>
+                
+                <div class="pt-2 space-y-3">
+                    <button id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition-colors">
+                        Đăng nhập
+                    </button>
+                    <button id="registerBtn" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg transition-colors">
+                        Tạo tài khoản mới
+                    </button>
+                </div>
+                <p id="authMsg" class="text-xs text-center text-red-400 hidden"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH CHÍNH CỦA ỨNG DỤNG -->
+    <div id="appScreen" class="w-full max-w-md space-y-6 hidden">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center card border border-slate-700 !py-4">
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Đang đăng nhập với ID</p>
+                <div class="text-xl font-mono text-yellow-500 font-bold" id="myIdDisplay">---</div>
+            </div>
+            <button id="logoutBtn" class="text-sm text-red-400 hover:text-red-300 font-semibold px-3 py-2 bg-red-900/30 rounded-lg">
+                Đăng xuất
+            </button>
+        </div>
+
+        <button id="reqPermBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl transition-colors text-sm font-semibold shadow-lg shadow-blue-900/20">
+            🔔 Bật quyền nhận Thông báo (Bắt buộc)
+        </button>
+
+        <!-- Form gửi -->
+        <div class="card border border-slate-700 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-orange-500"></div>
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                Gửi Tin Mới
+            </h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">ID Người Nhận</label>
+                    <input type="text" id="targetId" class="w-full bg-slate-800/50 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 transition-colors uppercase font-mono" placeholder="Nhập chính xác ID của họ">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Nội dung Buzz</label>
+                    <input type="text" id="msgText" class="w-full bg-slate-800/50 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 transition-colors" placeholder="Gõ gì đó để nhắc họ...">
+                </div>
+                <button id="sendBtn" class="w-full bg-yellow-600 hover:bg-yellow-500 text-slate-900 font-bold py-3 rounded-lg transition-colors flex justify-center items-center gap-2">
+                    <span>Gửi Buzz!</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bảng lịch sử -->
+        <div class="card border border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Lịch sử
+                </h2>
+                <button id="clearLogBtn" class="text-xs text-slate-500 hover:text-slate-300 bg-slate-800 px-2 py-1 rounded">Xóa</button>
+            </div>
+            <div id="logs" class="space-y-2 max-h-60 overflow-y-auto text-sm pr-1 custom-scrollbar">
+                <!-- Log sẽ xuất hiện ở đây -->
+                <div class="text-center text-slate-500 text-xs py-4 italic" id="emptyLog">Chưa có tin nhắn nào...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, serverTimestamp, getDocs, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // ==========================================
+        // CẤU HÌNH FIREBASE TỪ ẢNH CỦA BẠN
+        // Nhớ bổ sung phần đuôi của apiKey và appId
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHLSsZzOC02fIg8p7lzvadIrWgY-h8MqM",
+            authDomain: "buzz-app-3344e.firebaseapp.com",
+            projectId: "buzz-app-3344e",
+            storageBucket: "buzz-app-3344e.firebasestorage.app",
+            messagingSenderId: "440628577109",
+            appId: "1:440628577109:web:aab206838df9d8ec1fa5dc",
+            measurementId: "G-JTKZ671Q7B"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Biến toàn cục
+        let currentUserData = null;
+        let listenerUnsubscribe = null;
+
+        // UI Elements
+        const authScreen = document.getElementById('authScreen');
+        const appScreen = document.getElementById('appScreen');
+        const authIdInput = document.getElementById('authId');
+        const authPassInput = document.getElementById('authPass');
+        const authMsg = document.getElementById('authMsg');
+        const logsContainer = document.getElementById('logs');
+        const emptyLog = document.getElementById('emptyLog');
+
+        // Hàm đổi trạng thái màn hình
+        function showAuthScreen() {
+            authScreen.classList.remove('hidden');
+            appScreen.classList.add('hidden');
+        }
+        function showAppScreen() {
+            authScreen.classList.add('hidden');
+            appScreen.classList.remove('hidden');
+            document.getElementById('myIdDisplay').innerText = currentUserData.customId;
+        }
+
+        function showAuthError(msg) {
+            authMsg.innerText = msg;
+            authMsg.classList.remove('hidden');
+            setTimeout(() => authMsg.classList.add('hidden'), 5000);
+        }
+
+        // ==========================================
+        // HỆ THỐNG XÁC THỰC (ĐĂNG NHẬP / ĐĂNG KÝ BẰNG CUSTOM ID)
+        // Firebase Auth mặc định dùng Email. Chúng ta sẽ "chế" ID thành một email giả 
+        // để dùng chung với hệ thống Auth của Firebase một cách an toàn.
+        // ==========================================
+        
+        function makeFakeEmail(id) {
+            return id.trim().toLowerCase() + "@buzz-app.local";
+        }
+
+        // ĐĂNG KÝ
+        document.getElementById('registerBtn').onclick = async () => {
+            const id = authIdInput.value.trim().toUpperCase();
+            const pass = authPassInput.value;
+
+            if (id.length < 3) return showAuthError("ID phải có ít nhất 3 ký tự!");
+            if (pass.length < 6) return showAuthError("Mật khẩu phải có ít nhất 6 ký tự!");
+
+            try {
+                document.getElementById('registerBtn').innerText = "Đang tạo...";
+                
+                // 1. Kiểm tra xem ID này có ai đăng ký trong database chưa
+                const idDoc = await getDoc(doc(db, "buzz_users", id));
+                if (idDoc.exists()) {
+                    showAuthError("ID này đã có người sử dụng. Vui lòng chọn ID khác!");
+                    return;
+                }
+
+                // 2. Tạo tài khoản Firebase Auth
+                const email = makeFakeEmail(id);
+                const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+                
+                // 3. Đăng ký tên ID này vào Firestore để giữ chỗ
+                await setDoc(doc(db, "buzz_users", id), {
+                    uid: userCred.user.uid,
+                    createdAt: serverTimestamp()
+                });
+
+                // onAuthStateChanged sẽ tự động bắt sự kiện và chuyển màn hình
+            } catch (error) {
+                console.error(error);
+                if(error.code === 'auth/email-already-in-use') showAuthError("ID này đã tồn tại trong hệ thống Auth!");
+                else showAuthError("Lỗi tạo tài khoản: " + error.message);
+            } finally {
+                document.getElementById('registerBtn').innerText = "Tạo tài khoản mới";
+            }
+        };
+
+        // ĐĂNG NHẬP
+        document.getElementById('loginBtn').onclick = async () => {
+            const id = authIdInput.value.trim().toUpperCase();
+            const pass = authPassInput.value;
+            
+            if (!id || !pass) return showAuthError("Vui lòng nhập đủ ID và mật khẩu!");
+
+            try {
+                document.getElementById('loginBtn').innerText = "Đang vào...";
+                const email = makeFakeEmail(id);
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (error) {
+                showAuthError("Sai ID hoặc Mật khẩu!");
+            } finally {
+                document.getElementById('loginBtn').innerText = "Đăng nhập";
+            }
+        };
+
+        // ĐĂNG XUẤT
+        document.getElementById('logoutBtn').onclick = () => {
+            signOut(auth);
+            if(listenerUnsubscribe) listenerUnsubscribe(); // Tắt lắng nghe tin nhắn cũ
+            logsContainer.innerHTML = '<div class="text-center text-slate-500 text-xs py-4 italic" id="emptyLog">Chưa có tin nhắn nào...</div>';
+        };
+
+        // THEO DÕI TRẠNG THÁI ĐĂNG NHẬP
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Rút trích ID từ cái email giả
+                const customId = user.email.split('@')[0].toUpperCase();
+                currentUserData = { uid: user.uid, customId: customId };
+                
+                showAppScreen();
+                authIdInput.value = '';
+                authPassInput.value = '';
+                
+                // Bắt đầu lắng nghe tin nhắn
+                startListeningMessages();
+                setupPushPermission(); // Hỏi quyền push
+            } else {
+                currentUserData = null;
+                showAuthScreen();
+            }
+        });
+
+
+        // ==========================================
+        // CÁC CHỨC NĂNG CỦA APP 
+        // ==========================================
+        
+        function logActivity(sender, text, isMe = false) {
+            if(emptyLog) emptyLog.style.display = 'none';
+            const time = new Date().toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+            const logEl = document.createElement('div');
+            
+            if (isMe) {
+                // Tin nhắn mình gửi đi (Nằm bên phải)
+                logEl.className = 'flex flex-col items-end mb-3 ml-8';
+                logEl.innerHTML = `
+                    <div class="text-[10px] text-slate-400 mb-1 tracking-wide">Gửi đến <b class="text-yellow-500">${sender}</b> • ${time}</div>
+                    <div class="bg-yellow-600/20 border border-yellow-600/50 text-yellow-100 p-2.5 rounded-2xl rounded-tr-sm inline-block shadow-sm">${text}</div>
+                `;
+            } else {
+                // Tin nhắn nhận được (Nằm bên trái)
+                logEl.className = 'flex flex-col items-start mb-3 mr-8';
+                logEl.innerHTML = `
+                    <div class="text-[10px] text-slate-400 mb-1 tracking-wide">Từ <b class="text-blue-400">${sender}</b> • ${time}</div>
+                    <div class="bg-slate-700/50 border border-slate-600 text-slate-200 p-2.5 rounded-2xl rounded-tl-sm inline-block shadow-sm">${text}</div>
+                `;
+            }
+            logsContainer.prepend(logEl);
+        }
+
+        document.getElementById('clearLogBtn').onclick = () => { 
+            logsContainer.innerHTML = '<div class="text-center text-slate-500 text-xs py-4 italic" id="emptyLog">Chưa có tin nhắn nào...</div>'; 
+        };
+
+        // BẬT QUYỀN THÔNG BÁO
+        const reqPermBtn = document.getElementById('reqPermBtn');
+        async function setupPushPermission() {
+            if (!("Notification" in window)) return;
+            if (Notification.permission === "granted") {
+                reqPermBtn.classList.add('hidden');
+                return;
+            }
+            reqPermBtn.onclick = async () => {
+                const perm = await Notification.requestPermission();
+                if (perm === "granted") reqPermBtn.classList.add('hidden');
+            };
+        }
+
+        // GỬI TIN NHẮN
+        const sendBtn = document.getElementById('sendBtn');
+        const targetIdInput = document.getElementById('targetId');
+        const msgTextInput = document.getElementById('msgText');
+
+        sendBtn.onclick = async () => {
+            const target = targetIdInput.value.trim().toUpperCase();
+            const msg = msgTextInput.value.trim();
+
+            if (!target || !msg) return alert("Nhập đủ ID người nhận và nội dung!");
+            if (target === currentUserData.customId) return alert("Bạn không thể tự Buzz chính mình!");
+
+            try {
+                sendBtn.disabled = true;
+                const originalText = sendBtn.innerHTML;
+                sendBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-slate-900 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang gửi...`;
+                
+                // Ghi vào database (Public Box)
+                await addDoc(collection(db, "buzz_messages"), {
+                    senderId: currentUserData.customId,
+                    targetId: target,
+                    message: msg,
+                    timestamp: serverTimestamp()
+                });
+
+                logActivity(target, msg, true);
+                msgTextInput.value = '';
+                
+                // Khôi phục nút bấm sau khi gửi
+                setTimeout(() => {
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = originalText;
+                }, 500);
+
+            } catch (error) {
+                console.error(error);
+                alert("Lỗi gửi tin! Bạn hãy kiểm tra lại Database Rules.");
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<span>Gửi Buzz!</span>';
+            }
+        };
+
+        // LẮNG NGHE TIN NHẮN TỚI
+        function startListeningMessages() {
+            if(listenerUnsubscribe) listenerUnsubscribe(); // Hủy kết nối cũ nếu có
+
+            const messagesRef = collection(db, "buzz_messages");
+            // Chỉ bắt các tin nhắn mà targetId trùng với ID đang đăng nhập
+            const q = query(messagesRef, where("targetId", "==", currentUserData.customId));
+            
+            let isInitialLoad = true;
+            
+            listenerUnsubscribe = onSnapshot(q, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "added") {
+                        const data = change.doc.data();
+                        
+                        // Bỏ qua tin cũ lúc vừa đăng nhập xong
+                        if (isInitialLoad) return;
+
+                        // In ra màn hình
+                        logActivity(data.senderId, data.message, false);
+                        
+                        // Kích hoạt chuông/rung và Push Notification
+                        if ("Notification" in window && Notification.permission === "granted") {
+                            new Notification(`⚡ Buzz! từ ${data.senderId}`, {
+                                body: data.message,
+                                icon: "https://cdn-icons-png.flaticon.com/512/3238/3238012.png",
+                                vibrate: [300, 100, 300, 100, 300] // Rung mạnh 3 nhịp
+                            });
+                        }
+                    }
+                });
+                isInitialLoad = false;
+            });
+        }
+    </script>
+</body>
+</html>
