@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzz! - OneSignal Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tích hợp SDK OneSignal -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "40c7f55f-8f0d-440d-8715-023b123258f8",
+        });
+      });
+    </script>
+
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+        .card { background-color: #1e293b; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+        .hidden { display: none !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center min-h-screen">
+    
+    <!-- MÀN HÌNH ĐĂNG NHẬP / TẠO TÀI KHOẢN -->
+    <div id="authScreen" class="w-full max-w-sm mt-10">
+        <div class="card border border-slate-700">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-bold text-yellow-500 mb-2">⚡ Buzz!</h1>
+                <p class="text-sm text-slate-400">OneSignal Edition</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">ID Của Bạn (Tự chọn)</label>
+                    <input type="text" id="authId" class="w-full bg-slate-800/50 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 transition-colors uppercase font-mono" placeholder="Ví dụ: ADMIN_A">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Mật khẩu</label>
+                    <input type="password" id="authPass" class="w-full bg-slate-800/50 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 transition-colors" placeholder="••••••••">
+                </div>
+                
+                <div class="pt-2 space-y-3">
+                    <button id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition-colors">
+                        Đăng nhập
+                    </button>
+                    <button id="registerBtn" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg transition-colors">
+                        Tạo tài khoản mới
+                    </button>
+                </div>
+                <p id="authMsg" class="text-xs text-center text-red-400 hidden"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH CHÍNH CỦA ỨNG DỤNG -->
+    <div id="appScreen" class="w-full max-w-md space-y-6 hidden">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center card border border-slate-700 !py-4">
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Đang đăng nhập với ID</p>
+                <div class="text-xl font-mono text-yellow-500 font-bold" id="myIdDisplay">---</div>
+            </div>
+            <button id="logoutBtn" class="text-sm text-red-400 hover:text-red-300 font-semibold px-3 py-2 bg-red-900/30 rounded-lg">
+                Đăng xuất
+            </button>
+        </div>
+
+        <button id="reqPermBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl transition-colors text-sm font-semibold shadow-lg shadow-blue-900/20">
+            🔔 Bật quyền nhận Thông báo (OneSignal)
+        </button>
+
+        <!-- Form gửi -->
+        <div class="card border border-slate-700 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-orange-500"></div>
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                Gửi Tin Mới
+            </h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">ID Người Nhận</label>
+                    <input type="text" id="targetId" class="w-full bg-slate-800/50 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 transition-colors uppercase font-mono" placeholder="Nhập chính xác ID của họ">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Nội dung Buzz</label>
+                    <input type="text" id="msgText" class="w-full bg-slate-800/50 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 transition-colors" placeholder="Gõ gì đó để nhắc họ...">
+                </div>
+                <button id="sendBtn" class="w-full bg-yellow-600 hover:bg-yellow-500 text-slate-900 font-bold py-3 rounded-lg transition-colors flex justify-center items-center gap-2">
+                    <span>Gửi Buzz qua OneSignal!</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bảng lịch sử (Hộp thư đến) -->
+        <div class="card border border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Hộp thư đến (Lịch sử)
+                </h2>
+                <button id="clearLogBtn" class="text-xs text-slate-500 hover:text-slate-300 bg-slate-800 px-2 py-1 rounded">Xóa</button>
+            </div>
+            <div id="logs" class="space-y-2 max-h-80 overflow-y-auto text-sm pr-1 custom-scrollbar">
+                <div class="text-center text-slate-500 text-xs py-4 italic" id="emptyLog">Đang tải lịch sử...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, serverTimestamp, getDocs, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // ==========================================
+        // CẤU HÌNH FIREBASE VÀ ONESIGNAL
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHLSsZzOC02fIg8p7lzvadIrWgY-h8MqM",
+            authDomain: "buzz-app-3344e.firebaseapp.com",
+            projectId: "buzz-app-3344e",
+            storageBucket: "buzz-app-3344e.firebasestorage.app",
+            messagingSenderId: "440628577109",
+            appId: "1:440628577109:web:aab206838df9d8ec1fa5dc",
+            measurementId: "G-JTKZ671Q7B"
+        };
+
+        const ONESIGNAL_APP_ID = "40c7f55f-8f0d-440d-8715-023b123258f8"; 
+        const ONESIGNAL_REST_API_KEY = "Os_v2_app_idd7kx4pbvca3byvai5remsy7bmaegqzbduupo55etemokzeyt6meff45y5vyf7gaqrseukixkhi3wi2gvufvlxoumqlqnifwr7gata"; 
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUserData = null;
+        let listenerUnsubscribe = null;
+
+        const authScreen = document.getElementById('authScreen');
+        const appScreen = document.getElementById('appScreen');
+        const authIdInput = document.getElementById('authId');
+        const authPassInput = document.getElementById('authPass');
+        const authMsg = document.getElementById('authMsg');
+        const logsContainer = document.getElementById('logs');
+        const emptyLog = document.getElementById('emptyLog');
+
+        function showAuthScreen() { authScreen.classList.remove('hidden'); appScreen.classList.add('hidden'); }
+        function showAppScreen() { authScreen.classList.add('hidden'); appScreen.classList.remove('hidden'); document.getElementById('myIdDisplay').innerText = currentUserData.customId; }
+        function showAuthError(msg) { authMsg.innerText = msg; authMsg.classList.remove('hidden'); setTimeout(() => authMsg.classList.add('hidden'), 5000); }
+        function makeFakeEmail(id) { return id.trim().toLowerCase() + "@buzz-app.local"; }
+
+        // --- AUTH LOGIC ---
+        document.getElementById('registerBtn').onclick = async () => {
+            const id = authIdInput.value.trim().toUpperCase();
+            const pass = authPassInput.value;
+            if (id.length < 3 || pass.length < 6) return showAuthError("ID >=3 ký tự và Pass >= 6 ký tự");
+            try {
+                document.getElementById('registerBtn').innerText = "Đang tạo...";
+                const idDoc = await getDoc(doc(db, "buzz_users", id));
+                if (idDoc.exists()) return showAuthError("ID này đã có người sử dụng!");
+                const email = makeFakeEmail(id);
+                const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+                await setDoc(doc(db, "buzz_users", id), { uid: userCred.user.uid, createdAt: serverTimestamp() });
+            } catch (error) {
+                showAuthError("Lỗi tạo tài khoản: " + error.message);
+            } finally {
+                document.getElementById('registerBtn').innerText = "Tạo tài khoản mới";
+            }
+        };
+
+        document.getElementById('loginBtn').onclick = async () => {
+            const id = authIdInput.value.trim().toUpperCase();
+            const pass = authPassInput.value;
+            if (!id || !pass) return showAuthError("Nhập đủ ID và mật khẩu!");
+            try {
+                document.getElementById('loginBtn').innerText = "Đang vào...";
+                await signInWithEmailAndPassword(auth, makeFakeEmail(id), pass);
+            } catch (error) {
+                showAuthError("Sai ID hoặc Mật khẩu!");
+            } finally {
+                document.getElementById('loginBtn').innerText = "Đăng nhập";
+            }
+        };
+
+        document.getElementById('logoutBtn').onclick = () => {
+            signOut(auth);
+            OneSignalDeferred.push(function(OneSignal) { OneSignal.logout(); });
+            if(listenerUnsubscribe) listenerUnsubscribe();
+            logsContainer.innerHTML = '<div class="text-center text-slate-500 text-xs py-4 italic" id="emptyLog">Chưa có tin nhắn nào...</div>';
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const customId = user.email.split('@')[0].toUpperCase();
+                currentUserData = { uid: user.uid, customId: customId };
+                
+                showAppScreen();
+                authIdInput.value = ''; authPassInput.value = '';
+                
+                OneSignalDeferred.push(function(OneSignal) {
+                    OneSignal.login(customId);
+                });
+
+                startListeningMessages();
+                checkOneSignalPermission();
+            } else {
+                currentUserData = null;
+                showAuthScreen();
+            }
+        });
+
+        // --- ONESIGNAL PERMISSION ---
+        const reqPermBtn = document.getElementById('reqPermBtn');
+        function checkOneSignalPermission() {
+            OneSignalDeferred.push(async function(OneSignal) {
+                const isSupported = OneSignal.Notifications.isPushSupported();
+                if (!isSupported) {
+                    reqPermBtn.innerText = "Trình duyệt không hỗ trợ Push";
+                    reqPermBtn.classList.replace('bg-blue-600', 'bg-slate-600');
+                    return;
+                }
+                const hasPerm = OneSignal.Notifications.permission;
+                if (hasPerm === true) {
+                    reqPermBtn.classList.add('hidden');
+                } else {
+                    reqPermBtn.onclick = async () => {
+                        await OneSignal.Slidedown.promptPush();
+                        if (OneSignal.Notifications.permission === true) reqPermBtn.classList.add('hidden');
+                    };
+                }
+            });
+        }
+
+        // --- GỬI TIN NHẮN ---
+        const sendBtn = document.getElementById('sendBtn');
+        const targetIdInput = document.getElementById('targetId');
+        const msgTextInput = document.getElementById('msgText');
+
+        sendBtn.onclick = async () => {
+            const target = targetIdInput.value.trim().toUpperCase();
+            const msg = msgTextInput.value.trim();
+
+            if (!target || !msg) return alert("Nhập đủ ID người nhận và nội dung!");
+            if (target === currentUserData.customId) return alert("Không thể tự Buzz chính mình!");
+
+            try {
+                sendBtn.disabled = true;
+                const originalText = sendBtn.innerHTML;
+                sendBtn.innerHTML = `Đang gửi...`;
+                
+                // 1. Lưu vào Firebase
+                try {
+                    await addDoc(collection(db, "buzz_messages"), {
+                        senderId: currentUserData.customId,
+                        targetId: target,
+                        message: msg,
+                        timestamp: serverTimestamp()
+                    });
+                } catch (fbErr) {
+                    throw new Error("Lỗi Firebase: Cơ sở dữ liệu bị chặn hoặc lỗi kết nối. (" + fbErr.message + ")");
+                }
+
+                // 2. Kích hoạt Push qua OneSignal API (Dùng CORS Proxy)
+                try {
+                    // Sử dụng corsproxy.io để vượt qua lớp bảo mật CORS của trình duyệt khi gọi API Server-to-Server
+                    const response = await fetch("https://corsproxy.io/?https://onesignal.com/api/v1/notifications", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json; charset=utf-8",
+                            "Authorization": `Basic ${ONESIGNAL_REST_API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            app_id: ONESIGNAL_APP_ID,
+                            target_channel: "push",
+                            include_aliases: {
+                                external_id: [target]
+                            },
+                            headings: { "en": "⚡ Buzz! từ " + currentUserData.customId },
+                            contents: { "en": msg }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json();
+                        console.error("OneSignal Error:", errData);
+                        throw new Error("Lỗi OneSignal: " + (errData.errors ? errData.errors[0] : "Lỗi không xác định"));
+                    }
+                } catch (apiErr) {
+                    throw new Error("Lỗi mạng/API: " + apiErr.message);
+                }
+
+                logActivity(target, msg, null, true, true);
+                msgTextInput.value = '';
+                
+                setTimeout(() => {
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = originalText;
+                }, 500);
+            } catch (error) {
+                console.error("Chi tiết lỗi:", error);
+                alert(error.message); // Hiển thị nguyên nhân lỗi cụ thể ra màn hình
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<span>Gửi Buzz qua OneSignal!</span>';
+            }
+        };
+
+        // --- HIỂN THỊ LỊCH SỬ ---
+        function logActivity(sender, text, timeStampMillis, isMe = false, prepend = true) {
+            if(emptyLog) emptyLog.style.display = 'none';
+            const time = timeStampMillis ? new Date(timeStampMillis).toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}) : new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+            const logEl = document.createElement('div');
+            
+            if (isMe) {
+                logEl.className = 'flex flex-col items-end mb-3 ml-8';
+                logEl.innerHTML = `<div class="text-[10px] text-slate-400 mb-1 tracking-wide">Gửi đến <b class="text-yellow-500">${sender}</b> • ${time}</div><div class="bg-yellow-600/20 border border-yellow-600/50 text-yellow-100 p-2.5 rounded-2xl rounded-tr-sm inline-block shadow-sm">${text}</div>`;
+            } else {
+                logEl.className = 'flex flex-col items-start mb-3 mr-8';
+                logEl.innerHTML = `<div class="text-[10px] text-slate-400 mb-1 tracking-wide">Từ <b class="text-blue-400">${sender}</b> • ${time}</div><div class="bg-slate-700/50 border border-slate-600 text-slate-200 p-2.5 rounded-2xl rounded-tl-sm inline-block shadow-sm">${text}</div>`;
+            }
+            if (prepend) logsContainer.prepend(logEl); else logsContainer.appendChild(logEl);
+        }
+
+        document.getElementById('clearLogBtn').onclick = () => { logsContainer.innerHTML = '<div class="text-center text-slate-500 text-xs py-4 italic" id="emptyLog">Trống</div>'; };
+
+        function startListeningMessages() {
+            if(listenerUnsubscribe) listenerUnsubscribe();
+            const q = query(collection(db, "buzz_messages"), where("targetId", "==", currentUserData.customId));
+            let isInitialLoad = true;
+            
+            listenerUnsubscribe = onSnapshot(q, (snapshot) => {
+                if (isInitialLoad) {
+                    logsContainer.innerHTML = ''; 
+                    let oldMessages = [];
+                    snapshot.forEach(doc => oldMessages.push(doc.data()));
+                    oldMessages.sort((a, b) => {
+                        const t1 = a.timestamp ? a.timestamp.toMillis() : 0;
+                        const t2 = b.timestamp ? b.timestamp.toMillis() : 0;
+                        return t2 - t1;
+                    });
+                    if (oldMessages.length === 0) logsContainer.innerHTML = '<div class="text-center text-slate-500 text-xs py-4 italic" id="emptyLog">Chưa có tin nhắn nào...</div>';
+                    oldMessages.forEach(data => {
+                        const ms = data.timestamp ? data.timestamp.toMillis() : null;
+                        logActivity(data.senderId, data.message, ms, false, false);
+                    });
+                    isInitialLoad = false;
+                } else {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            const data = change.doc.data();
+                            const ms = data.timestamp ? data.timestamp.toMillis() : null;
+                            logActivity(data.senderId, data.message, ms, false, true);
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
